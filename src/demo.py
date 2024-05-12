@@ -27,6 +27,8 @@ def demo(args):
 
     # Model and version
     net = importlib.import_module("model." + args.model)
+    print(net)
+    print(args)
     model = net.InpaintGenerator(args)
     model.load_state_dict(torch.load(args.pre_train, map_location="cpu"))
     model.eval()
