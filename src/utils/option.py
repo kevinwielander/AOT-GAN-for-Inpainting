@@ -4,12 +4,12 @@ import argparse
 parser = argparse.ArgumentParser(description="Image Inpainting")
 
 # data specifications
-parser.add_argument("--dir_image", type=str, default="../../dataset", help="image dataset directory")
-parser.add_argument("--dir_mask", type=str, default="../../dataset", help="mask dataset directory")
-parser.add_argument("--data_train", type=str, default="places2", help="dataname used for training")
-parser.add_argument("--data_test", type=str, default="places2", help="dataname used for testing")
+parser.add_argument("--dir_image", type=str, default="../dataset", help="image dataset directory")
+parser.add_argument("--dir_mask", type=str, default="../dataset/mask", help="mask dataset directory")
+parser.add_argument("--data_train", type=str, default="ilsvrc2012_64x64/train", help="dataname used for training")
+parser.add_argument("--data_test", type=str, default="ilsvrc2012_64x64/train", help="dataname used for testing")
 parser.add_argument("--image_size", type=int, default=512, help="image size used during training")
-parser.add_argument("--mask_type", type=str, default="pconv", help="mask used during training")
+parser.add_argument("--mask_type", type=str, default="mask", help="mask used during training")
 
 # model specifications
 parser.add_argument("--model", type=str, default="aotgan", help="model name")
@@ -18,7 +18,7 @@ parser.add_argument("--rates", type=str, default="1+2+4+8", help="dilation rates
 parser.add_argument("--gan_type", type=str, default="smgan", help="discriminator types")
 
 # hardware specifications
-parser.add_argument("--seed", type=int, default=2021, help="random seed")
+parser.add_argument("--seed", type=int, default=2024, help="random seed")
 parser.add_argument("--num_workers", type=int, default=4, help="number of workers used in data loader")
 
 # optimization specifications

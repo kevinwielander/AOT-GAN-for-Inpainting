@@ -6,6 +6,7 @@ import torchvision.transforms as transforms
 import torchvision.transforms.functional as F
 from PIL import Image
 from torch.utils.data import Dataset
+from pathlib import Path
 
 
 class InpaintingData(Dataset):
@@ -16,8 +17,12 @@ class InpaintingData(Dataset):
 
         # image and mask
         self.image_path = []
-        for ext in ["*.jpg", "*.png"]:
-            self.image_path.extend(glob(os.path.join(args.dir_image, args.data_train, ext)))
+        for ext in ["*.jpg", "*.png", "*.JPEG"]:
+            self.image_path.extend(self.recursive_glob(os.path.join(args.dir_image, args.data_train), ext))
+
+        if not self.image_path:
+            raise ValueError(f"No images found in {os.path.join(args.dir_image, args.data_train)}")
+
         self.mask_path = glob(os.path.join(args.dir_mask, args.mask_type, "*.png"))
 
         # augmentation
@@ -37,6 +42,9 @@ class InpaintingData(Dataset):
             ]
         )
 
+    def recursive_glob(self, root_dir, pattern):
+        return [str(path) for path in Path(root_dir).rglob(pattern)]
+
     def __len__(self):
         return len(self.image_path)
 
@@ -51,7 +59,7 @@ class InpaintingData(Dataset):
             mask = mask.convert("L")
         else:
             mask = np.zeros((self.h, self.w)).astype(np.uint8)
-            mask[self.h // 4 : self.h // 4 * 3, self.w // 4 : self.w // 4 * 3] = 1
+            mask[:self.h // 2, :self.w // 2] = 1
             mask = Image.fromarray(mask).convert("L")
 
         # augment
@@ -60,18 +68,16 @@ class InpaintingData(Dataset):
 
         return image, mask, filename
 
-
 if __name__ == "__main__":
-    from attrdict import AttrDict
+    from types import SimpleNamespace
 
-    args = {
-        "dir_image": "../../../dataset",
-        "data_train": "places2",
-        "dir_mask": "../../../dataset",
-        "mask_type": "pconv",
-        "image_size": 512,
-    }
-    args = AttrDict(args)
+    args = SimpleNamespace(
+        dir_image="../../dataset",
+        data_train="ilsvrc2012_64x64/train",
+        dir_mask="../../dataset",
+        mask_type="mask",
+        image_size=64
+    )
 
     data = InpaintingData(args)
     print(len(data), len(data.mask_path))
