@@ -1,7 +1,7 @@
 import importlib
 import os
 from glob import glob
-
+from pathlib import Path
 import numpy as np
 import torch
 from PIL import Image
@@ -17,9 +17,11 @@ def postprocess(image):
     return Image.fromarray(image)
 
 
-def main_worker(args, use_gpu=True):
-    # device = torch.device("cuda") if use_gpu else torch.device("cpu")
+def recursive_glob(root_dir, pattern):
+    return [str(path) for path in Path(root_dir).rglob(pattern)]
 
+
+def main_worker(args, use_gpu=True):
     # Model and version
     net = importlib.import_module("model." + args.model)
     model = net.InpaintGenerator(args).cuda()
@@ -28,14 +30,32 @@ def main_worker(args, use_gpu=True):
 
     # prepare dataset
     image_paths = []
-    for ext in [".jpg", ".png"]:
-        image_paths.extend(glob(os.path.join(args.dir_image, "*" + ext)))
+    for ext in ["*.jpg", "*.png", "*.JPEG"]:
+        image_paths.extend(recursive_glob(os.path.join(args.dir_image, args.data_train), ext))
     image_paths.sort()
-    mask_paths = sorted(glob(os.path.join(args.dir_mask, "*.png")))
+
+    mask_paths = sorted(glob(os.path.join(args.dir_mask, args.mask_type, "*.png")))
+    if not mask_paths:
+        print(f"No masks found in {os.path.join(args.dir_mask, args.mask_type)}")
+        print("Using default quarter mask")
+        h = w = args.image_size
+        default_mask = np.zeros((h, w), dtype=np.uint8)
+        default_mask[:h // 2, :w // 2] = 255
+
+        default_mask_path = os.path.join(args.outputs, "default_mask.png")
+        Image.fromarray(default_mask).save(default_mask_path)
+        mask_paths = [default_mask_path]
+
     os.makedirs(args.outputs, exist_ok=True)
 
+    if not image_paths:
+        raise ValueError(f"No images found in {os.path.join(args.dir_image, args.data_train)}")
+
     # iteration through datasets
-    for ipath, mpath in zip(image_paths, mask_paths):
+    for ipath in image_paths:
+        # Get random mask for each image
+        mpath = np.random.choice(mask_paths)
+
         image = ToTensor()(Image.open(ipath).convert("RGB"))
         image = (image * 2.0 - 1.0).unsqueeze(0)
         mask = ToTensor()(Image.open(mpath).convert("L"))

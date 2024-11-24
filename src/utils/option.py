@@ -7,8 +7,8 @@ parser = argparse.ArgumentParser(description="Image Inpainting")
 parser.add_argument("--dir_image", type=str, default="../dataset", help="image dataset directory")
 parser.add_argument("--dir_mask", type=str, default="../dataset/mask", help="mask dataset directory")
 parser.add_argument("--data_train", type=str, default="ilsvrc2012_64x64/train", help="dataname used for training")
-parser.add_argument("--data_test", type=str, default="ilsvrc2012_64x64/train", help="dataname used for testing")
-parser.add_argument("--image_size", type=int, default=512, help="image size used during training")
+parser.add_argument("--data_test", type=str, default="ilsvrc2012_64x64/val", help="dataname used for testing")
+parser.add_argument("--image_size", type=int, default=64, help="image size used during training")
 parser.add_argument("--mask_type", type=str, default="mask", help="mask used during training")
 
 # model specifications
@@ -43,7 +43,7 @@ parser.add_argument("--resume", action="store_true", help="resume from previous 
 
 # log specifications
 parser.add_argument("--print_every", type=int, default=10, help="frequency for updating progress bar")
-parser.add_argument("--save_every", type=int, default=1e4, help="frequency for saving models")
+parser.add_argument("--save_every", type=int, default=3e4, help="frequency for saving models")
 parser.add_argument("--save_dir", type=str, default="../experiments", help="directory for saving models and logs")
 parser.add_argument(
     "--tensorboard", action="store_true", help="default: false, since it will slow training. use it for debugging"

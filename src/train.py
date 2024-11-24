@@ -22,7 +22,7 @@ def main_worker(id, ngpus_per_node, args):
     args.save_dir = os.path.join(args.save_dir, f"{args.model}_{args.data_train}_{args.mask_type}{args.image_size}")
     if (not args.distributed) or args.global_rank == 0:
         os.makedirs(args.save_dir, exist_ok=True)
-        with open(os.path.join(args.save_dir, "config.ini"), "a") as f:
+        with open(os.path.join(args.save_dir, "config.txt"), "a") as f:
             for key, val in vars(args).items():
                 f.write(f"{key}: {val}\n")
         print(f"[**] create folder {args.save_dir}")

@@ -64,7 +64,7 @@ class InpaintingData(Dataset):
 
         # augment
         image = self.img_trans(image) * 2.0 - 1.0
-        mask = F.to_tensor(self.mask_trans(mask))
+        mask = F.to_tensor(self.mask_trans(mask)) * 255
 
         return image, mask, filename
 

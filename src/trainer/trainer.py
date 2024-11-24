@@ -1,7 +1,7 @@
 import importlib
 import os
 from glob import glob
-
+import wandb
 import torch
 from data import create_loader
 from loss import loss as loss_module
@@ -17,6 +17,12 @@ class Trainer:
     def __init__(self, args):
         self.args = args
         self.iteration = 0
+        if self.args.global_rank == 0:
+            wandb.init(
+                project="aotgan-inpainting",
+                config=vars(args),
+                name=f"{args.model}_{args.data_train}_{args.mask_type}{args.image_size}"
+            )
 
         # setup data set and data loader
         self.dataloader = create_loader(args)
@@ -33,6 +39,10 @@ class Trainer:
 
         self.netD = net.Discriminator().cuda()
         self.optimD = torch.optim.Adam(self.netD.parameters(), lr=args.lrd, betas=(args.beta1, args.beta2))
+
+        if self.args.global_rank == 0:
+            wandb.watch(self.netG)
+            wandb.watch(self.netD)
 
         self.load()
         if args.distributed:
@@ -104,6 +114,7 @@ class Trainer:
 
             # in: [rgb(3) + edge(1)]
             pred_img = self.netG(images_masked, masks)
+
             comp_img = (1 - masks) * images + masks * pred_img
 
             # reconstruction losses
@@ -143,6 +154,28 @@ class Trainer:
                     self.writer.add_image("orig", make_grid((images + 1.0) / 2.0), self.iteration)
                     self.writer.add_image("pred", make_grid((pred_img + 1.0) / 2.0), self.iteration)
                     self.writer.add_image("comp", make_grid((comp_img + 1.0) / 2.0), self.iteration)
+
+            if self.args.global_rank == 0 and (self.iteration % self.args.print_every == 0):
+                # Log metrics
+                log_dict = {
+                    'iteration': self.iteration,
+                    'model_time': timer_model.release(),
+                    'data_time': timer_data.release()
+                }
+
+                # Log losses
+                for key, val in losses.items():
+                    log_dict[f'loss/{key}'] = val.item()
+
+                # Log images
+                log_dict.update({
+                    'images/mask': wandb.Image(make_grid(masks)),
+                    'images/original': wandb.Image(make_grid((images + 1.0) / 2.0)),
+                    'images/predicted': wandb.Image(make_grid((pred_img + 1.0) / 2.0)),
+                    'images/composite': wandb.Image(make_grid((comp_img + 1.0) / 2.0))
+                })
+
+                wandb.log(log_dict)
 
             if self.args.global_rank == 0 and (self.iteration % self.args.save_every) == 0:
                 self.save()
