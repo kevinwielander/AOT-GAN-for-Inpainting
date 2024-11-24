@@ -31,7 +31,7 @@ def main_worker(args, use_gpu=True):
     # prepare dataset
     image_paths = []
     for ext in ["*.jpg", "*.png", "*.JPEG"]:
-        image_paths.extend(recursive_glob(os.path.join(args.dir_image, args.data_train), ext))
+        image_paths.extend(recursive_glob(os.path.join(args.dir_image, args.data_test), ext))
     image_paths.sort()
 
     mask_paths = sorted(glob(os.path.join(args.dir_mask, args.mask_type, "*.png")))
@@ -68,9 +68,10 @@ def main_worker(args, use_gpu=True):
 
         comp_imgs = (1 - mask) * image + mask * pred_img
         image_name = os.path.basename(ipath).split(".")[0]
-        postprocess(image_masked[0]).save(os.path.join(args.outputs, f"{image_name}_masked.png"))
-        postprocess(pred_img[0]).save(os.path.join(args.outputs, f"{image_name}_pred.png"))
-        postprocess(comp_imgs[0]).save(os.path.join(args.outputs, f"{image_name}_comp.png"))
+        #postprocess(image_masked[0]).save(os.path.join(args.outputs, f"{image_name}_masked.png"))
+        #postprocess(pred_img[0]).save(os.path.join(args.outputs, f"{image_name}_pred.png"))
+        postprocess(comp_imgs[0]).save(os.path.join(args.outputs, f"fake/{image_name}_comp.png"))
+        postprocess(image[0]).save(os.path.join(args.outputs, f"gt/{image_name}_comp.png"))
         print(f"saving to {os.path.join(args.outputs, image_name)}")
 
 

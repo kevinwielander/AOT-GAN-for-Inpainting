@@ -26,7 +26,7 @@ def compare_psnr(pairs):
 
 def compare_ssim(pairs):
     real, fake = pairs
-    return structural_similarity(real, fake, multichannel=True)
+    return structural_similarity(real, fake, multichannel=True, win_size=3)
 
 
 def mae(reals, fakes, num_worker=8):
