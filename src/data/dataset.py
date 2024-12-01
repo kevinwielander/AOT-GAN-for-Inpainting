@@ -76,7 +76,8 @@ class InpaintingData(Dataset):
             mask = Image.fromarray(mask).convert("L")
 
         # augment
-        image = self.img_trans(image) * 2.0 - 1.0
+        #image = self.img_trans(image) * 2.0 - 1.0
+        image = F.to_tensor(image) * 2.0 - 1.0
         #mask = F.to_tensor(self.mask_trans(mask)) * 255
         mask = F.to_tensor(mask) * 255
 
