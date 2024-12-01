@@ -40,6 +40,10 @@ parser.add_argument("--batch_size", type=int, default=8, help="batch size in eac
 parser.add_argument("--port", type=int, default=22334, help="tcp port for distributed training")
 parser.add_argument("--resume", action="store_true", help="resume from previous iteration")
 
+#early terminations specifications
+parser.add_argument("--early_stop_iterations", type=int, default=1e4, help="the number of iterations without improvement to stop training")
+parser.add_argument("--early_stop_check_interval", type=int, default=5e3, help="the interval of checking early stop")
+
 
 # log specifications
 parser.add_argument("--print_every", type=int, default=10, help="frequency for updating progress bar")

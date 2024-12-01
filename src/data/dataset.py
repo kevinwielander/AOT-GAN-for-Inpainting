@@ -1,5 +1,6 @@
 import os
 from glob import glob
+import random
 
 import numpy as np
 import torchvision.transforms as transforms
@@ -58,13 +59,27 @@ class InpaintingData(Dataset):
             mask = Image.open(self.mask_path[index])
             mask = mask.convert("L")
         else:
-            mask = np.zeros((self.h, self.w)).astype(np.uint8)
-            mask[:self.h // 2, :self.w // 2] = 1
+            mask = np.zeros((self.h, self.w), dtype=np.uint8)
+
+            # Randomly choose one of the four quarters
+            quarter = random.choice(['top-left', 'top-right', 'bottom-left', 'bottom-right'])
+
+            if quarter == 'top-left':
+                mask[:self.h // 2, :self.w // 2] = 1
+            elif quarter == 'top-right':
+                mask[:self.h // 2, self.w // 2:] = 1
+            elif quarter == 'bottom-left':
+                mask[self.h // 2:, :self.w // 2] = 1
+            else:
+                mask[self.h // 2:, self.w // 2:] = 1
+
             mask = Image.fromarray(mask).convert("L")
 
         # augment
         image = self.img_trans(image) * 2.0 - 1.0
-        mask = F.to_tensor(self.mask_trans(mask)) * 255
+        #mask = F.to_tensor(self.mask_trans(mask)) * 255
+        mask = F.to_tensor(mask) * 255
+
 
         return image, mask, filename
 

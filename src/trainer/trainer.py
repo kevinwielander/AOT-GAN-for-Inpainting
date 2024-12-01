@@ -1,5 +1,6 @@
 import importlib
 import os
+import sys
 from glob import glob
 import wandb
 import torch
@@ -17,6 +18,8 @@ class Trainer:
     def __init__(self, args):
         self.args = args
         self.iteration = 0
+        self.best_loss = float('inf')
+        self.iterations_without_improvement = 0
         if self.args.global_rank == 0:
             wandb.init(
                 project="aotgan-inpainting",
@@ -81,19 +84,20 @@ class Trainer:
             pass
 
     def save(
-        self,
+        self, is_best=False
     ):
         if self.args.global_rank == 0:
             print(f"\nsaving {self.iteration} model to {self.args.save_dir} ...")
+            suffix = "best" if is_best else str(self.iteration).zfill(7)
             torch.save(
-                self.netG.module.state_dict(), os.path.join(self.args.save_dir, f"G{str(self.iteration).zfill(7)}.pt")
+                self.netG.module.state_dict(), os.path.join(self.args.save_dir, f"G{suffix}.pt")
             )
             torch.save(
-                self.netD.module.state_dict(), os.path.join(self.args.save_dir, f"D{str(self.iteration).zfill(7)}.pt")
+                self.netD.module.state_dict(), os.path.join(self.args.save_dir, f"D{suffix}.pt")
             )
             torch.save(
                 {"optimG": self.optimG.state_dict(), "optimD": self.optimD.state_dict()},
-                os.path.join(self.args.save_dir, f"O{str(self.iteration).zfill(7)}.pt"),
+                os.path.join(self.args.save_dir, f"O{suffix}.pt"),
             )
 
     def train(self):
@@ -139,6 +143,19 @@ class Trainer:
                 timer_model.hold()
                 timer_data.tic()
 
+                if self.iteration % self.args.early_stop_check_interval == 0:
+                    current_loss = sum(losses.values())
+
+                    if current_loss < self.best_loss:
+                        self.best_loss = current_loss
+                        self.iterations_without_improvement = 0
+                        self.save(is_best=True)
+                    else:
+                        self.iterations_without_improvement += self.args.early_stop_check_interval
+                        if self.iterations_without_improvement >= self.args.early_stop_iterations:
+                            wandb.finish()
+                            sys.exit(0)
+
             # logs
             # scalar_reduced = reduce_loss_dict(losses, self.args.world_size)
             if self.args.global_rank == 0 and (self.iteration % self.args.print_every == 0):
@@ -160,7 +177,8 @@ class Trainer:
                 log_dict = {
                     'iteration': self.iteration,
                     'model_time': timer_model.release(),
-                    'data_time': timer_data.release()
+                    'data_time': timer_data.release(),
+                    'total_loss': sum(loss.item() for loss in losses.values())
                 }
 
                 # Log losses
@@ -174,6 +192,10 @@ class Trainer:
                     'images/predicted': wandb.Image(make_grid((pred_img + 1.0) / 2.0)),
                     'images/composite': wandb.Image(make_grid((comp_img + 1.0) / 2.0))
                 })
+
+                loss_table = wandb.Table(columns=["iteration"] + list(losses.keys()))
+                loss_table.add_data(self.iteration, *[loss.item() for loss in losses.values()])
+                log_dict['loss_table'] = loss_table
 
                 wandb.log(log_dict)
 
