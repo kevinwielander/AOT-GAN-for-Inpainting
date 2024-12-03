@@ -153,6 +153,7 @@ class Trainer:
                     else:
                         self.iterations_without_improvement += self.args.early_stop_check_interval
                         if self.iterations_without_improvement >= self.args.early_stop_iterations:
+                            print("Early stopping")
                             wandb.finish()
                             sys.exit(0)
 
