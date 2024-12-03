@@ -4,10 +4,10 @@ import argparse
 parser = argparse.ArgumentParser(description="Image Inpainting")
 
 # data specifications
-parser.add_argument("--dir_image", type=str, default="../dataset", help="image dataset directory")
+parser.add_argument("--dir_image", type=str, default="../../datasets/EuroSAT_RGB_transformed", help="image dataset directory")
 parser.add_argument("--dir_mask", type=str, default="../dataset/mask", help="mask dataset directory")
-parser.add_argument("--data_train", type=str, default="ilsvrc2012_64x64/train", help="dataname used for training")
-parser.add_argument("--data_test", type=str, default="ilsvrc2012_64x64/val", help="dataname used for testing")
+parser.add_argument("--data_train", type=str, default="train", help="dataname used for training")
+parser.add_argument("--data_test", type=str, default="test", help="dataname used for testing")
 parser.add_argument("--image_size", type=int, default=64, help="image size used during training")
 parser.add_argument("--mask_type", type=str, default="mask", help="mask used during training")
 

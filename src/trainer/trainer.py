@@ -121,6 +121,8 @@ class Trainer:
 
             comp_img = (1 - masks) * images + masks * pred_img
 
+            diff_img = torch.abs(images - pred_img)
+
             # reconstruction losses
             losses = {}
             for name, weight in self.args.rec_loss.items():
@@ -191,7 +193,8 @@ class Trainer:
                     'images/mask': wandb.Image(make_grid(masks)),
                     'images/original': wandb.Image(make_grid((images + 1.0) / 2.0)),
                     'images/predicted': wandb.Image(make_grid((pred_img + 1.0) / 2.0)),
-                    'images/composite': wandb.Image(make_grid((comp_img + 1.0) / 2.0))
+                    'images/composite': wandb.Image(make_grid((comp_img + 1.0) / 2.0)),
+                    'images/difference': wandb.Image(make_grid(diff_img))
                 })
 
                 loss_table = wandb.Table(columns=["iteration"] + list(losses.keys()))
