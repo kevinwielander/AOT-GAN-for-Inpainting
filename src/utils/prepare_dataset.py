@@ -1,4 +1,5 @@
 import os
+from PIL import Image
 import random
 import shutil
 from pathlib import Path
@@ -48,5 +49,44 @@ def split_dataset(root_folder, train_ratio=0.8, seed=2024):
 
     print(f"Dataset split complete. New dataset location: {new_root}")
 
+def preprocess_images(dataset_path, target_height, target_width):
+    output_dir = f"{dataset_path}_{target_height}x{target_width}"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-split_dataset("../../../datasets/EuroSAT_RGB")
+    for root, _, files in os.walk(dataset_path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            try:
+                with Image.open(file_path) as img:
+                    # Check if the file is an image
+                    if img.format not in ["JPEG", "JPG", "PNG", "BMP", "GIF", "TIFF"]:
+                        continue
+
+                    # Center crop the image
+                    width, height = img.size
+                    left = (width - target_width) // 2
+                    top = (height - target_height) // 2
+                    right = left + target_width
+                    bottom = top + target_height
+
+                    cropped_img = img.crop((left, top, right, bottom))
+
+                    # Preserve folder structure in the output directory
+                    relative_path = os.path.relpath(root, dataset_path)
+                    output_subdir = os.path.join(output_dir, relative_path)
+                    if not os.path.exists(output_subdir):
+                        os.makedirs(output_subdir)
+
+                    # Save the cropped image
+                    output_file_path = os.path.join(output_subdir, file)
+                    if os.path.exists(output_file_path):
+                        print(f"Overwriting existing file: {output_file_path}")
+                    cropped_img.save(output_file_path)
+
+            except Exception as e:
+                print(f"Error processing file {file_path}: {e}")
+
+
+preprocess_images("../../../datasets/ILSVRC2012_train", 256, 256)
+# split_dataset("../../../datasets/EuroSAT_RGB")
