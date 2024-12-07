@@ -81,8 +81,10 @@ def preprocess_images(dataset_path, target_height, target_width):
                     # Save the cropped image
                     output_file_path = os.path.join(output_subdir, file)
                     if os.path.exists(output_file_path):
-                        print(f"Overwriting existing file: {output_file_path}")
-                    cropped_img.save(output_file_path)
+                        #print(f"Overwriting existing file: {output_file_path}")
+                        pass
+                    else:
+                        cropped_img.save(output_file_path)
 
             except Exception as e:
                 print(f"Error processing file {file_path}: {e}")

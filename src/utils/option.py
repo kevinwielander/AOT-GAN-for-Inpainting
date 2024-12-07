@@ -4,11 +4,11 @@ import argparse
 parser = argparse.ArgumentParser(description="Image Inpainting")
 
 # data specifications
-parser.add_argument("--dir_image", type=str, default="../../datasets/EuroSAT_RGB_transformed", help="image dataset directory")
-parser.add_argument("--dir_mask", type=str, default="../dataset/mask", help="mask dataset directory")
-parser.add_argument("--data_train", type=str, default="train", help="dataname used for training")
-parser.add_argument("--data_test", type=str, default="test", help="dataname used for testing")
-parser.add_argument("--image_size", type=int, default=64, help="image size used during training")
+parser.add_argument("--dir_image", type=str, default="../../datasets/", help="image dataset directory")
+parser.add_argument("--dir_mask", type=str, default="../dataset/mask_256x256", help="mask dataset directory")
+parser.add_argument("--data_train", type=str, default="ILSVRC2012_train_256x256", help="dataname used for training")
+parser.add_argument("--data_test", type=str, default="ILSVRC2012_val_256x256", help="dataname used for testing")
+parser.add_argument("--image_size", type=int, default=256, help="image size used during training")
 parser.add_argument("--mask_type", type=str, default="mask", help="mask used during training")
 
 # model specifications
@@ -32,6 +32,7 @@ parser.add_argument("--beta2", type=float, default=0.999, help="beta2 in optimiz
 
 # loss specifications
 parser.add_argument("--rec_loss", type=str, default="1*L1+250*Style+0.1*Perceptual", help="losses for reconstruction")
+parser.add_argument("--rec_loss", type=str, default="1*L1", help="losses for reconstruction")
 parser.add_argument("--adv_weight", type=float, default=0.01, help="loss weight for adversarial loss")
 
 # training specifications
@@ -41,8 +42,8 @@ parser.add_argument("--port", type=int, default=22334, help="tcp port for distri
 parser.add_argument("--resume", action="store_true", help="resume from previous iteration")
 
 #early terminations specifications
-parser.add_argument("--early_stop_iterations", type=int, default=1e4, help="the number of iterations without improvement to stop training")
-parser.add_argument("--early_stop_check_interval", type=int, default=5e3, help="the interval of checking early stop")
+parser.add_argument("--early_stop_iterations", type=int, default=1e5, help="the number of iterations without improvement to stop training")
+parser.add_argument("--early_stop_check_interval", type=int, default=1e4, help="the interval of checking early stop")
 
 
 # log specifications
