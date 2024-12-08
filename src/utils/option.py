@@ -31,13 +31,13 @@ parser.add_argument("--beta1", type=float, default=0.5, help="beta1 in optimizer
 parser.add_argument("--beta2", type=float, default=0.999, help="beta2 in optimizer")
 
 # loss specifications
+parser.add_argument("--swinir_loss", type=str, default="0.7*Charbonnier+0.3*LPIPS", help="losses for Swin IR")
 parser.add_argument("--rec_loss", type=str, default="1*L1+250*Style+0.1*Perceptual", help="losses for reconstruction")
-parser.add_argument("--rec_loss", type=str, default="1*L1", help="losses for reconstruction")
 parser.add_argument("--adv_weight", type=float, default=0.01, help="loss weight for adversarial loss")
 
 # training specifications
 parser.add_argument("--iterations", type=int, default=1e6, help="the number of iterations for training")
-parser.add_argument("--batch_size", type=int, default=8, help="batch size in each mini-batch")
+parser.add_argument("--batch_size", type=int, default=2, help="batch size in each mini-batch")
 parser.add_argument("--port", type=int, default=22334, help="tcp port for distributed training")
 parser.add_argument("--resume", action="store_true", help="resume from previous iteration")
 
@@ -47,7 +47,7 @@ parser.add_argument("--early_stop_check_interval", type=int, default=1e4, help="
 
 
 # log specifications
-parser.add_argument("--print_every", type=int, default=10, help="frequency for updating progress bar")
+parser.add_argument("--print_every", type=int, default=1000, help="frequency for updating progress bar")
 parser.add_argument("--save_every", type=int, default=3e4, help="frequency for saving models")
 parser.add_argument("--save_dir", type=str, default="../experiments", help="directory for saving models and logs")
 parser.add_argument(

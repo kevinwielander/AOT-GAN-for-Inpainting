@@ -2,6 +2,8 @@ import os
 
 import torch
 import torch.multiprocessing as mp
+
+from src.trainer.swinir_trainer import SwinIRTrainer
 from trainer.trainer import Trainer
 from utils.option import args
 
@@ -27,7 +29,8 @@ def main_worker(id, ngpus_per_node, args):
                 f.write(f"{key}: {val}\n")
         print(f"[**] create folder {args.save_dir}")
 
-    trainer = Trainer(args)
+    #trainer = Trainer(args)
+    trainer = SwinIRTrainer(args)
     trainer.train()
 
 

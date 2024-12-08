@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import lpips
 
 from .common import VGG19, gaussian_blur
 
@@ -14,6 +15,15 @@ class L1:
     def __call__(self, x, y):
         return self.calc(x, y)
 
+class Charbonnier(nn.Module):
+    def __init__(self, epsilon=1e-3):
+        super(Charbonnier, self).__init__()
+        self.epsilon = epsilon
+
+    def forward(self, x, y):
+        diff = x - y
+        loss = torch.sqrt(diff * diff + self.epsilon * self.epsilon)
+        return loss.mean()
 
 class Perceptual(nn.Module):
     def __init__(self, weights=[1.0, 1.0, 1.0, 1.0, 1.0]):
@@ -30,6 +40,13 @@ class Perceptual(nn.Module):
             content_loss += self.weights[i] * self.criterion(x_vgg[f"relu{prefix[i]}_1"], y_vgg[f"relu{prefix[i]}_1"])
         return content_loss
 
+class LPIPS(nn.Module):
+    def __init__(self, net_type='alex', version='0.1'):
+        super(LPIPS, self).__init__()
+        self.loss_fn = lpips.LPIPS(net=net_type, version=version)
+
+    def forward(self, x, y):
+        return self.loss_fn(x, y)
 
 class Style(nn.Module):
     def __init__(self):
@@ -102,3 +119,4 @@ class smgan:
         gen_loss = self.loss_fn(g_fake, g_fake_label) * masks / torch.mean(masks)
 
         return dis_loss.mean(), gen_loss.mean()
+

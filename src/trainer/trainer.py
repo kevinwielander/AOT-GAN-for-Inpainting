@@ -7,7 +7,6 @@ import torch
 from data import create_loader
 from loss import loss as loss_module
 from torch.nn.parallel import DistributedDataParallel as DDP
-from torch.utils.tensorboard import SummaryWriter
 from torchvision.utils import make_grid
 from tqdm import tqdm
 
@@ -51,9 +50,6 @@ class Trainer:
         if args.distributed:
             self.netG = DDP(self.netG, device_ids=[args.local_rank], output_device=[args.local_rank])
             self.netD = DDP(self.netD, device_ids=[args.local_rank], output_device=[args.local_rank])
-
-        if args.tensorboard:
-            self.writer = SummaryWriter(os.path.join(args.save_dir, "log"))
 
     def load(self):
         try:
